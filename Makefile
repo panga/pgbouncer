@@ -180,4 +180,4 @@ htmls:
 	done
 
 doc/pgbouncer.1 doc/pgbouncer.5:
-	$(MAKE) -C doc $(@F)
+#	$(MAKE) -C doc $(@F)
