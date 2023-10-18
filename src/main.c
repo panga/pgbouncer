@@ -1065,8 +1065,6 @@ int main(int argc, char *argv[])
 		 tls_backend_version());
 
 	sd_notify(0, "READY=1");
-	if (fast_switchover)
-		cf_server_check_delay = 0;
 
 	/* main loop */
 	while (cf_shutdown < 2)

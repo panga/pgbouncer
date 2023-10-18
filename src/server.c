@@ -179,7 +179,7 @@ static bool handle_server_startup(PgSocket *server, PktHdr *pkt)
 			if (!strtok(data, ".")) {
 				log_error("could not parse hostname from: %s", data);
 			} else {
-				PgPool *new_pool = new_pool_from_db(server->pool->db, data, hostname);
+				PgPool *new_pool = new_pool_from_db(server->pool->db, server->pool->user, data, hostname);
 				if (new_pool) {
 					new_pool->parent_pool = server->pool;
 					new_pool->parent_pool->global_writer = server->pool;

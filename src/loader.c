@@ -269,7 +269,7 @@ fail:
 	return false;
 }
 
-PgPool *new_pool_from_db(PgDatabase *db, char *dbname, char *hostname)
+PgPool *new_pool_from_db(PgDatabase *db, PgUser *user, char *dbname, char *hostname)
 {
 	PgPool *pool;
 	PgDatabase *new_db = find_database(dbname);
@@ -324,7 +324,13 @@ PgPool *new_pool_from_db(PgDatabase *db, char *dbname, char *hostname)
 		if (!force_user(new_db, db->forced_user->name, db->forced_user->passwd)) {;
 			goto oom;
 		}
+	} else {
+		if (!force_user(new_db, user->name, user->passwd)) {;
+			goto oom;
+		}
 	}
+
+	new_db->dbname = strdup(db->dbname);
 
 	log_debug("creating pool for %s", new_db->name);
 	pool = get_pool(new_db, new_db->forced_user);

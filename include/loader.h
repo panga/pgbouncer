@@ -26,4 +26,4 @@ bool parse_user(void *base, const char *name, const char *params) _MUSTCHECK;
 bool load_auth_file(const char *fn)  /* _MUSTCHECK */;
 bool loader_users_check(void)  /* _MUSTCHECK */;
 
-PgPool *new_pool_from_db(PgDatabase *db, char *dbname, char *hostname);
+PgPool *new_pool_from_db(PgDatabase *db, PgUser *user, char *dbname, char *hostname);
