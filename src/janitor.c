@@ -222,10 +222,10 @@ static void launch_recheck(PgPool *pool, PgSocket *client)
 
 			last_poll_time = next_pool->last_poll_time;
 			difference_in_ms = (now - last_poll_time) / 1000;
-			log_debug("launch_recheck: last time checked for pool %s: now: %llu last: %llu, diff: %llu, polling_freq_max: %llu", next_pool->db->name, now, last_poll_time, difference_in_ms, cf_polling_frequency/1000);
+			log_debug("launch_recheck: last time checked for pool %s: now: %lu last: %lu, diff: %lu, polling_freq_max: %lu", next_pool->db->name, now, last_poll_time, difference_in_ms, cf_polling_frequency/1000);
 
 			if (difference_in_ms < polling_freq_in_ms) {
-				log_debug("launch_recheck: skipping because it's too soon for pool %s (%llu ms)", next_pool->db->name, difference_in_ms);
+				log_debug("launch_recheck: skipping because it's too soon for pool %s (%lu ms)", next_pool->db->name, difference_in_ms);
 				continue;
 			}
 
