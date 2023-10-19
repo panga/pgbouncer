@@ -132,6 +132,7 @@ static bool handle_server_startup(PgSocket *server, PktHdr *pkt)
 	const uint8_t *ckey;
 	char *data = NULL;
 	char *hostname = NULL;
+	char *dbname = NULL;
 
 	if (incomplete_pkt(pkt)) {
 		disconnect_server(server, true, "partial pkt in login phase");
@@ -165,9 +166,9 @@ static bool handle_server_startup(PgSocket *server, PktHdr *pkt)
 		break;
 
 	case 'D':       /* DataRow */
-		if (fast_switchover && server->pool->db->topology_query && server->pool->initial_writer_endpoint) {
+		if (fast_switchover && server->pool->db->topology_query && !server->pool->topology_endpoint) {
 			data = query_data(pkt);
-			log_debug("got initial data: %s", data);
+			log_debug("got topology data: %s", data);
 
 			hostname = strdup(data);
 			if (hostname == NULL) {
@@ -176,21 +177,35 @@ static bool handle_server_startup(PgSocket *server, PktHdr *pkt)
 				return NULL;
 			}
 
-			if (!strtok(data, ".")) {
-				log_error("could not parse hostname from: %s", data);
-			} else {
-				PgPool *new_pool = new_pool_from_db(server->pool->db, server->pool->user, data, hostname);
-				if (new_pool) {
-					new_pool->parent_pool = server->pool;
-					new_pool->parent_pool->global_writer = server->pool;
-					new_pool->db->topology_query = strdup(server->pool->db->topology_query);
-					launch_new_connection(new_pool, true);
-					server->pool->num_nodes++;
-				}
+			dbname = malloc(MAX_DBNAME);
+			if (dbname == NULL) {
+				log_error("malloc: no mem for dbname");
+				free(data);
+				free(hostname);
+				return NULL;
+			}
+
+			if (sprintf(dbname, "%s-%s-%d", server->pool->db->name, server->pool->user->name, server->pool->num_nodes) < 0) {
+				log_error("sprintf: no mem for dbname");
+				free(data);
+				free(hostname);
+				free(dbname);
+				return NULL;
+			}
+
+			PgPool *new_pool = new_pool_from_db(server->pool->db, server->pool->user, dbname, hostname);
+			if (new_pool) {
+				new_pool->parent_pool = server->pool;
+				new_pool->parent_pool->global_writer = server->pool;
+				new_pool->db->topology_query = strdup(server->pool->db->topology_query);
+				new_pool->topology_endpoint = true;
+				launch_new_connection(new_pool, true);
+				server->pool->num_nodes++;
 			}
 
 			free(data);
 			free(hostname);
+			free(dbname);
 		}
 
 		sbuf_prepare_skip(sbuf, pkt->len);
@@ -228,7 +243,7 @@ static bool handle_server_startup(PgSocket *server, PktHdr *pkt)
 			if (!res)
 				disconnect_server(server, false, "exec_on_connect query failed");
 			break;
-		} else if (fast_switchover && server->pool->db->topology_query && server->pool->initial_writer_endpoint) {
+		} else if (fast_switchover && server->pool->db->topology_query && !server->pool->topology_endpoint) {
 			server->exec_on_connect = true;
 			slog_debug(server, "server connect ok, send topology_query: %s", server->pool->db->topology_query);
 			SEND_generic(res, server, 'Q', "s", server->pool->db->topology_query);
@@ -237,10 +252,9 @@ static bool handle_server_startup(PgSocket *server, PktHdr *pkt)
 			break;
 		}
 
-		if (server->pool->db->topology_query && server->pool->initial_writer_endpoint && server->pool->num_nodes < 2) {
+		if (server->pool->db->topology_query && !server->pool->topology_endpoint && server->pool->num_nodes < 2) {
 			fatal("topology_query did not find at least 2 nodes to use fast switchovers in DB: '%s'. Is the topology table populated with entries?", server->pool->db->name);
 		}
-		server->pool->initial_writer_endpoint = false;
 
 		/* login ok */
 		slog_debug(server, "server login ok, start accepting queries");

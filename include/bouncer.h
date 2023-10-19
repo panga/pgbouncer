@@ -138,7 +138,7 @@ extern int cf_sbuf_len;
  */
 
 /* matching NAMEDATALEN */
-#define MAX_DBNAME	64
+#define MAX_DBNAME	128
 
 /*
  * Ought to match NAMEDATALEN.  Some cloud services use longer user
@@ -386,7 +386,7 @@ struct PgPool {
 
 	bool welcome_msg_ready:1;
 	bool recently_checked:1; // should be set once checking starts. If all pools have this set, they need to be unset so we can loop again.
-	bool initial_writer_endpoint:1; // used to indicate a configured writer when starting PgBouncer. Used for getting the topology of the cluster associated with the writer.
+	bool topology_endpoint:1; // used to indicate a pool is part of the topology
 	bool refresh_topology:1; // after a new writer is found, indicate that we need to refresh the topology.
 	/*
 	 * Used to indicate that DataRow, CommandComplete, and ReadyForQuery should be discarded.

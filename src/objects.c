@@ -1620,7 +1620,7 @@ bool finish_client_login(PgSocket *client)
 		} else if (!fast_switchover) {
 			log_debug("finish_client_login: not using fast switchovers");
 		} else if (!client->pool->db->topology_query) {
-			log_debug("finish_client_login: no topology query, so not using fast switchover");
+			log_debug("finish_client_login: no topology query, so not using fast switchover for pool: %s", client->pool->db->name);
 		} else if (global_writer) {
 			log_debug("finish_client_login: global writer is set, so let's use the cached value: %s", global_writer->db->name);
 			if (client->pool != global_writer && !set_pool(client, global_writer->db->name, client->login_user->name, client->login_user->passwd, true)) {

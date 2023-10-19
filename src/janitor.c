@@ -184,7 +184,7 @@ static void launch_recheck(PgPool *pool, PgSocket *client)
 	log_debug("launch_recheck: for db: %s, global_writer? %s", pool->db->name, global_writer ? global_writer->db->name : "no global_writer");
 
 	if (!pool->db->topology_query) {
-		log_debug("launch_recheck: no topology_query for this pool, so proceeding without cache");
+		log_debug("launch_recheck: no topology_query pool: %s, so proceeding without cache", pool->db->name);
 	} else if (global_writer) {
 		log_debug("launch_recheck: global writer is set: using cached pool: %s", global_writer->db->name);
 		update_client_pool(client, global_writer);
@@ -489,14 +489,8 @@ static void loop_maint(bool initialize)
 		if (pool->db->admin)
 			continue;
 
-		if (initialize) {
-			if (!pool->db->topology_query)
-				continue;
-
-			pool->initial_writer_endpoint = true;
-			log_debug("create initial pool during startup for: %s", pool->db->name);
-		} else {
-			if (fast_switchover && pool->last_connect_failed && get_global_writer(pool)) {
+		if (fast_switchover) {
+			if (pool->last_connect_failed && get_global_writer(pool)) {
 				if (now - pool->last_failed_time > cf_server_failed_delay) {
 					log_debug("last connect failed: %s, so launching new connection in per_loop_maint", pool->db->name);
 					launch_new_connection(pool, true);
