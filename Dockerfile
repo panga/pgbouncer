@@ -4,7 +4,7 @@ RUN \
   # security
   apk add -U --no-cache --upgrade busybox && \
   # download
-  apk add -U --no-cache autoconf autoconf-doc automake udns udns-dev curl gcc patch python3-dev libc-dev libevent libevent-dev libtool make openssl-dev pkgconfig postgresql-client bash
+  apk add -U --no-cache autoconf autoconf-doc automake curl c-ares c-ares-dev gcc patch python3-dev libc-dev libevent libevent-dev libtool make openssl-dev pkgconfig postgresql-client bash
 
 ADD . /tmp/pgbouncer
 
@@ -12,7 +12,7 @@ RUN \
   # compile
   cd /tmp/pgbouncer && \
   ./autogen.sh && \
-  ./configure --prefix=/usr --with-udns && \
+  ./configure --prefix=/usr --with-cares && \
   make && \
   # install
   cp pgbouncer /usr/bin && \
@@ -24,7 +24,7 @@ RUN \
   # cleanup
   cd /tmp && \
   rm -rf /tmp/pgbouncer* && \
-  apk del --purge autoconf autoconf-doc automake udns-dev curl gcc patch libc-dev libevent-dev libtool make openssl-dev pkgconfig
+  apk del --purge autoconf autoconf-doc automake curl c-ares-dev gcc patch libc-dev libevent-dev libtool make openssl-dev pkgconfig
 
 USER postgres
 EXPOSE 5432
