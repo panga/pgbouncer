@@ -297,7 +297,7 @@ CF_ABS("rewrite_query_py_module_file", CF_STR, cf_rewrite_query_py_module_file, 
 CF_ABS("rewrite_query_disconnect_on_failure", CF_STR, cf_rewrite_query_disconnect_on_failure, 0, "false"),
 CF_ABS("sbuf_loopcnt", CF_INT, cf_sbuf_loopcnt, 0, "5"),
 CF_ABS("server_check_delay", CF_TIME_USEC, cf_server_check_delay, 0, "30"),
-CF_ABS("server_check_query", CF_STR, cf_server_check_query, 0, "select 1"),
+CF_ABS("server_check_query", CF_STR, cf_server_check_query, 0, ";"),
 CF_ABS("server_connect_timeout", CF_TIME_USEC, cf_server_connect_timeout, 0, "15"),
 CF_ABS("server_fast_close", CF_INT, cf_server_fast_close, 0, "0"),
 // allow backing off after switchover/failover. The delay to wait until reopening failed connections.

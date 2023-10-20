@@ -286,7 +286,7 @@ static void launch_recheck(PgPool *pool, PgSocket *client)
 	/* is the check needed? */
 	if (q == NULL || q[0] == 0) {
 		need_check = false;
-	} else if (cf_server_check_delay > 0) {
+	} else if (cf_server_check_delay > 0 && !pool->db->topology_query) {
 		usec_t now = get_cached_time();
 		if (now - server->request_time < cf_server_check_delay)
 			need_check = false;

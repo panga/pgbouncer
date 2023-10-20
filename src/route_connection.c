@@ -57,14 +57,14 @@ bool route_client_connection(PgSocket *client, int in_transaction, PktHdr *pkt) 
 		fatal("Invalid packet type - expected Q or P, got %c", pkt->type);
 	}
 
-	slog_debug(client, "route_client_connection: Username => %s", client->login_user->name);
-	slog_debug(client, "route_client_connection: Query => %s", query_str);
-
 	if (strcmp(cf_routing_rules_py_module_file, "not_enabled") == 0) {
 		slog_debug(client,
 				"Query routing not enabled in config (routing_rules_py_module_file)");
 		return true;
 	}
+
+	slog_debug(client, "route_client_connection: Username => %s", client->login_user->name);
+	slog_debug(client, "route_client_connection: Query => %s", query_str);
 
 	dbname = pycall(client, client->login_user->name, query_str, in_transaction, cf_routing_rules_py_module_file,
 			"routing_rules");

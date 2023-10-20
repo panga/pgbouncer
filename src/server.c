@@ -133,6 +133,7 @@ static bool handle_server_startup(PgSocket *server, PktHdr *pkt)
 	char *data = NULL;
 	char *hostname = NULL;
 	char *dbname = NULL;
+	int dbname_len = 0;
 
 	if (incomplete_pkt(pkt)) {
 		disconnect_server(server, true, "partial pkt in login phase");
@@ -185,13 +186,10 @@ static bool handle_server_startup(PgSocket *server, PktHdr *pkt)
 				return NULL;
 			}
 
-			if (sprintf(dbname, "%s-%s-%d", server->pool->db->name, server->pool->user->name, server->pool->num_nodes) < 0) {
-				log_error("sprintf: no mem for dbname");
-				free(data);
-				free(hostname);
-				free(dbname);
-				return NULL;
-			}
+			dbname_len = strlen(server->pool->db->name);
+			memcpy(dbname, server->pool->db->name, dbname_len);
+			memcpy(dbname+dbname_len, "-", 1);
+			md5_hash_3(server->pool->db->name, server->pool->user->name, data, dbname + dbname_len + 1);
 
 			PgPool *new_pool = new_pool_from_db(server->pool->db, server->pool->user, dbname, hostname);
 			if (new_pool) {

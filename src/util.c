@@ -132,6 +132,23 @@ void pg_md5_encrypt(const char *part1,
 	hash2hex(hash, dest + 3);
 }
 
+void md5_hash_3(const char *part1,
+		    const char *part2,
+			const char *part3,
+		    char *dest)
+{
+	struct md5_ctx ctx;
+	uint8_t hash[MD5_DIGEST_LENGTH];
+
+	md5_reset(&ctx);
+	md5_update(&ctx, part1, strlen(part1));
+	md5_update(&ctx, part2, strlen(part2));
+	md5_update(&ctx, part3, strlen(part3));
+	md5_final(&ctx, hash);
+
+	hash2hex(hash, dest);
+}
+
 /* wrapped for getting random bytes */
 void get_random_bytes(uint8_t *dest, int len)
 {
